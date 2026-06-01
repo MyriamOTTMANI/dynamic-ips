@@ -1,8 +1,8 @@
 #!/usr/bin/env bash
 #SBATCH --job-name=darp-repro
 #SBATCH --cpus-per-task=16
-#SBATCH --mem=36G
-#SBATCH --time=2:20:00
+#SBATCH --mem=16G
+#SBATCH --time=4:20:00
 #SBATCH --output=slurm-%A_%a.out
 #SBATCH --error=slurm-%A_%a.err
 

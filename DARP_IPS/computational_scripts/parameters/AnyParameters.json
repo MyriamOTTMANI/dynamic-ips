@@ -266,6 +266,7 @@
       "isDropPickPossible": 1,
       "nbPick": 2,
       "Route_Recycle": 1,
+      "reducedCostThreshold": 500,
       "LabelingStrategy": 0,
       "reoptimizeSP": 1,
       "LabelingReOptimizeStrategy": 2

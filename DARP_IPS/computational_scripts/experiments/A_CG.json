@@ -321,6 +321,21 @@
         "Compare_rebalance",
         "Compare_no_rebalance"
       ]
+    },
+    {
+      "id": "debug_test",
+      "description": "Debugging purpose.",
+      "main_algo": 6,
+      "sol_mode": 2,
+      "paramfile": "parameters/AnyParameters",
+      "groups": [
+        "aG9",
+        "aG10",
+        "aG11"
+      ],
+      "scenarios": [
+        "Pool_warm_keep"
+      ]
     }
   ]
 }
