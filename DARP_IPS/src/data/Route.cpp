@@ -275,8 +275,6 @@ bool Route::reConstruct(const PVehicle& vehicle, float wait_W1, float ride_W2)
         if (n->type_ == PICKUP) {
             if (reach > n->related_Request_->latestPickup_)
                 return false;
-      //      if (n->related_Request_->committedPickTime_ < LARGE_CONSTANT && n->related_Request_->solVehicleID_ != vehicleID_)
-      //          std::cout << "hi";
         } else if (n->type_ == DROPOFF){
             if (n->related_Request_->requestStatus_ == ON_BOARD) {
                 if (reach - n->pairNode_->nodeDepartTime_ > n->related_Request_->maxTravelTime_)

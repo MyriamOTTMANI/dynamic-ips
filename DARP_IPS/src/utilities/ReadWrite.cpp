@@ -610,7 +610,7 @@ void ReadWrite::readParametersJson(const std::string& strParamFile, PInstance &p
     int solveTimeLimit = scenarioParams.value("solveTimeLimit", 300);
     int populateTimeLimit = scenarioParams.value("populateTimeLimit", 200);
     float mipGap = scenarioParams.value("MIPGap", 0.001f);
-    double reducedCostThreshold = scenarioParams.value("reducedCostThreshold", 100.0);
+    double reducedCostThreshold = scenarioParams.value("reducedCostThreshold", 500.0);
 
     // ==================== VALIDATION ====================
     if (dynamicPricing && partialPricing) {
