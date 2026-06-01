@@ -16,7 +16,7 @@ DARP_IPS/.vscode/settings.json
 DARP_IPS/.vscode/tasks.json
 DARP_IPS/src/solvers/.idea/workspace.xml
 Data/*
-Outputs/*
+Outputs_1/*
 DARP_IPS/src/data/.idea/*
 dataset/*
 DARP_IPS/.idea/misc.xml
