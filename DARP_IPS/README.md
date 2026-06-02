@@ -19,7 +19,7 @@ solving the master problem.
 
 For a high-level overview of the project and datasets, see the
 [root README](../README.md). The Python pipeline that prepares data and plots
-results is documented in [`../DARP_Python/README.md`](../DARP_Python/README.md).
+results is documented in the [Python pipeline](../DARP_Python/README.md).
 
 
 ---
@@ -151,8 +151,8 @@ bin/realtime_DARP --help
 ```
 
 The values accepted by `--main-algo` and `--sol-mode` (e.g. which integer
-selects B-CG, A-CG, greedy, MIP, or offline) are documented in
-[`docs/parameters.md`](docs/parameters.md).
+selects B-CG, A-CG, greedy, MIP, or offline) are documented in the
+[Parameter reference](docs/parameters.md).
 
 ### Example — run a specific instance
 
@@ -177,7 +177,7 @@ Solver behavior is controlled via **JSON parameter files** (located in
 needs, and all other parameters fall back to their code defaults.
 
 - **Full parameter reference** (types, defaults, descriptions, and the mapping
-  from parameters to the B-CG / A-CG settings): [`docs/parameters.md`](docs/parameters.md).
+  from parameters to the B-CG / A-CG settings): [Parameter reference](docs/parameters.md).
 - To inspect the exact parameter schema in code:
   - `src/data/Parameters.h` and `src/data/Parameters.cpp`
   - `src/utilities/ConfigParser.h` and `src/utilities/ConfigParser.cpp`
@@ -191,7 +191,7 @@ Experiment generation and execution (local and SLURM) are managed from
 algorithm; it only expands experiment matrices into command lines that call this
 C++ binary.
 
-See [`computational_scripts/README_REPRODUCIBILITY.md`](computational_scripts/README_REPRODUCIBILITY.md)
+See the [Reproducibility guide](computational_scripts/README_REPRODUCIBILITY.md)
 for the full workflow: generating command files, running them locally (including
 dry runs and command-range filters), and submitting SLURM array jobs.
 
@@ -205,7 +205,7 @@ locations is provided as `edge_time_matrix.txt` (constructed from OpenStreetMap
 routing data).
 
 Instructions for downloading the data from Zenodo or regenerating instances are
-in [`../DARP_Python/README.md`](../DARP_Python/README.md).
+in the [Python pipeline](../DARP_Python/README.md).
 
 ### Riley_Benchmark
 
@@ -262,7 +262,7 @@ For each run the solver writes the following files to `--output-dir`, named afte
 | `Requests_<tag>.csv` | One row per request. Realized pickup/drop-off times, wait time, trip delay, assigned vehicle, vehicle switches across epochs, and dual value range. |
 | `Vehicles_<tag>.csv` | One row per vehicle. Requests served and time breakdown across service, driving full, driving empty, and idle. |
 | `Routes_<tag>.csv` | One row per stop visit. Final route plan with planned and realized arrival/departure times, vehicle load, and travel time from the previous stop. |
-| `Parameters_<tag>.csv` | One row per run. Machine-readable record of every solver parameter used. Useful for grouping and filtering result sets; columns match [`docs/parameters.md`](docs/parameters.md). |
+| `Parameters_<tag>.csv` | One row per run. Machine-readable record of every solver parameter used. Useful for grouping and filtering result sets; columns match the [Parameter reference](docs/parameters.md). |
 
 ---
 

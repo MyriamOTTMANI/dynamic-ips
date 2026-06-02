@@ -10,7 +10,7 @@ workflows:
    Column Generation) analyses.
 
 This pipeline does **not** implement the optimization algorithm; the solver
-itself is the C++ code in [`../DARP_IPS`](../DARP_IPS/README.md). For an
+itself is the C++ code [`here`](../DARP_IPS/README.md). For an
 overview of the whole project, see the [root README](../README.md).
 
 ---
@@ -155,10 +155,10 @@ python scripts/04_create_instances.py --network own --no-vehicles
 
 ### Step 5 — Run the solver
 
-Build and run the C++ solver on the generated instances. See
-[`../DARP_IPS/README.md`](../DARP_IPS/README.md) for build instructions and how
-to run, and
-[`../DARP_IPS/computational_scripts/README_REPRODUCIBILITY.md`](../DARP_IPS/computational_scripts/README_REPRODUCIBILITY.md)
+Build and run the C++ solver on the generated instances. See the
+[C++ solver README](../DARP_IPS/README.md) for build instructions and how
+to run, and the
+[Reproducibility guide](../DARP_IPS/computational_scripts/README_REPRODUCIBILITY.md)
 for generating and running experiment commands at scale.
 
 ---
@@ -197,6 +197,6 @@ running the pipeline.
 ## Related documentation
 
 - [Root README](../README.md) — project overview and datasets.
-- [`../DARP_IPS/README.md`](../DARP_IPS/README.md) — build and run the C++ solver.
-- [`../DARP_IPS/computational_scripts/README_REPRODUCIBILITY.md`](../DARP_IPS/computational_scripts/README_REPRODUCIBILITY.md) — generate and run experiment commands.
-- [`../DARP_IPS/docs/parameters.md`](../DARP_IPS/docs/parameters.md) — solver parameter reference.
+- [C++ solver README](../DARP_IPS/README.md) — build and run the C++ solver.
+- [Reproducibility guide](../DARP_IPS/computational_scripts/README_REPRODUCIBILITY.md) — generate and run experiment commands.
+- [Parameter reference](../DARP_IPS/docs/parameters.md) — solver parameter reference.

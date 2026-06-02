@@ -47,8 +47,8 @@ dynamic-ips/
 
 See the subfolder READMEs for full details:
 
-- **[DARP_IPS/README.md](DARP_IPS/README.md)** — build and run the C++ solver, run experiments.
-- **[DARP_Python/README.md](DARP_Python/README.md)** — prepare datasets and reproduce all figures.
+- **[C++ solver](DARP_IPS/README.md)** — build and run the solver, run experiments.
+- **[Python pipeline](DARP_Python/README.md)** — prepare datasets and reproduce all figures.
 
 ---
 
@@ -56,12 +56,12 @@ See the subfolder READMEs for full details:
 
 | Goal | Where to look |
 |------|---------------|
-| Build and run the solver | [`DARP_IPS/README.md`](DARP_IPS/README.md) |
-| Generate / run experiment commands (local or SLURM) | [`DARP_IPS/computational_scripts/README_REPRODUCIBILITY.md`](DARP_IPS/computational_scripts/README_REPRODUCIBILITY.md) |
-| Configure solver behavior (parameters) | [`DARP_IPS/docs/parameters.md`](DARP_IPS/docs/parameters.md) |
-| Reproduce **B-CG** figures | [`DARP_Python/README.md`](DARP_Python/README.md) → `scripts/plot_BCG.py` |
-| Reproduce **A-CG** figures | [`DARP_Python/README.md`](DARP_Python/README.md) → `scripts/plot_ACG.py` |
-| Prepare datasets from raw data | [`DARP_Python/README.md`](DARP_Python/README.md) |
+| Build and run the solver | [C++ solver](DARP_IPS/README.md) |
+| Generate / run experiment commands (local or SLURM) | [Reproducibility guide](DARP_IPS/computational_scripts/README_REPRODUCIBILITY.md) |
+| Configure solver behavior (parameters) | [Parameter reference](DARP_IPS/docs/parameters.md) |
+| Reproduce **B-CG** figures | [Python pipeline](DARP_Python/README.md) → [B-CG plotting script](DARP_Python/scripts/plot_BCG.py) |
+| Reproduce **A-CG** figures | [Python pipeline](DARP_Python/README.md) → [A-CG plotting script](DARP_Python/scripts/plot_ACG.py) |
+| Prepare datasets from raw data | [Python pipeline](DARP_Python/README.md) |
 
 ---
 
@@ -78,8 +78,8 @@ locations with a precomputed travel-time matrix.
 
 This repository contains also the code and instructions for
 downloading the data, regenerating the network (if desired), and regenerating the instances
-[`DARP_Python/README.md`](DARP_Python/README.md). The benchmark folder
-layout is documented in [`DARP_IPS/README.md`](DARP_IPS/README.md).
+in the [Python pipeline](DARP_Python/README.md). The benchmark folder
+layout is documented in the [C++ solver README](DARP_IPS/README.md).
 
 ---
 
@@ -88,13 +88,13 @@ layout is documented in [`DARP_IPS/README.md`](DARP_IPS/README.md).
 The end-to-end workflow is:
 
 1. **Build the solver** — compile the C++ code with a Gurobi (or CPLEX) backend.
-   See [`DARP_IPS/README.md`](DARP_IPS/README.md).
+   See the [C++ solver README](DARP_IPS/README.md).
 2. **Run experiments** — generate command files and run them locally or on a
    SLURM cluster.
-   See [`DARP_IPS/computational_scripts/README_REPRODUCIBILITY.md`](DARP_IPS/computational_scripts/README_REPRODUCIBILITY.md).
+   See the [Reproducibility guide](DARP_IPS/computational_scripts/README_REPRODUCIBILITY.md).
 3. **Analyze and plot** — regenerate the B-CG and
    A-CG figures with the Python plotting scripts.
-   See [`DARP_Python/README.md`](DARP_Python/README.md).
+   See the [Python pipeline](DARP_Python/README.md).
 
 ---
 
