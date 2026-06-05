@@ -1,0 +1,70 @@
+//
+// Created by Ella on 2021-09-08.
+//
+
+#ifndef READWRITE_H
+#define READWRITE_H
+
+
+#include "data/Instance.h"
+#include "utilities/InputPaths.h"
+
+
+//-----------------------------------------------------------------------------
+//  ReadWrite class
+//  functions to read input and write output
+//-----------------------------------------------------------------------------
+
+
+class ReadWrite {
+public:
+
+    // Read the instance file and store content in an instance object
+    static PInstance readInstance(const std::string& strInstanceFile);
+
+    // Count the vehicles listed in a vehicle file (rows under VEHICLES_INFO).
+    // Used to derive the fleet size from the file content when --num-vehicles
+    // is not provided.
+    static int countVehicles(const std::string& strVehicleFile);
+
+    // Read the vehicle file
+    static void readVehiclesData(const std::string& strTripsFile, const PInstance &pInstance);
+    static void readVehiclesDataF(const std::string& strTripsFile, const PInstance &pInstance, vector2D<PNode> &routeNodes);
+
+    // Read the onboard file
+    static void readOnboardRequests(const std::string& strTripsFile, PInstance &pInstance, vector2D<PNode> &routeNodes);
+
+    // Read the trip requests file
+    static void readTripRequests(const std::string& strTripsFile, PInstance &pInstance, int nbRequest);
+    static void readWaitRequests(const std::string& strTripsFile, PInstance &pInstance, int nbRequest, vector2D<PNode> &routeNodes);
+
+    // Read the duration data file
+    static void readDurations(const std::string& strDurFile, vector2D<float> &durationMat);
+
+    // Read the parameters data file
+    static void readParametersJson(const std::string& strParamFile, PInstance &pInstance, const std::string &scenarioName);
+    static void readZones(const std::string& strZoneFile, const PInstance &pInstance);
+
+    // function that opens all input files and updates main instance data
+    static void readDatafiles(InputPaths &inputPaths, PInstance &pInstance, const std::string& outputDir,
+        const std::string& paramFile, int initialState);
+
+    // Parsing functions
+    // Read a file stream until meeting the separating character
+    // (the characters that are read until the separating char are stored in pReadStr
+    static bool readUntilChar(std::fstream &pFile, char separator, std::string &pReadStr);
+
+    // Read a file stream until meeting one of the two separating characters
+    // (the characters that are read until the separating char are stored in pReadStr
+    static bool readUntilOneOfTwoChar(std::fstream &pFile, char separator1, char separator2, std::string &pReadStr);
+
+    // check if a string (sentence) ends with a given substring (word)
+    static bool strEndWith(const std::string& sentence, const std::string& word);
+
+    // Read the parameters datafile
+    static void readInstNames(const std::string& strInstanceNameFile, std::vector<std::string> &fileNames,
+                              int nbInstances, const std::string &index);
+};
+
+
+#endif //READWRITE_H

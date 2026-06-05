@@ -1,0 +1,157 @@
+//
+// Created by Elahe Amiri on 2025-11-02.
+//
+
+#include "BatchSolver.h"
+#include "MasterAlgorithm.h"
+
+void BatchSolver::BatchHorizon(PInstance &mainInst, InputPaths &inputPaths, bool middleSave, float saveTime) {
+    // define required variables
+    epoch_ = 0;
+    rebalanceTime_ = 0;
+    rebalancingTime_->start();
+ //   int instance_count = 1;
+    int instance_count = mainInst->nbVehicles_;
+
+    mainInst->setInitialTimes(mainInst->parameters_->epochLength_);
+    for (auto &vehicleObj : mainInst->vehicles_) {
+        vehicleObj->setEmptyRoute(mainInst);
+        vehicleObj->setSolutionRoute();
+        if (vehicleObj->currentRoute_ == nullptr)
+            vehicleObj->setCurrentRoute(vehicleObj->emptyRoute_);
+    }
+
+    int nbReceivedRequest = mainInst->nbOnboards_;
+    PInstance EpochInst = std::make_shared<Instance>(*mainInst);
+    std::vector<PRequest> zSolution;
+    while (nbReceivedRequest < mainInst->nbRequests_ || !zSolution.empty()){
+        nextEpoch:
+        // start simulation timer
+        simulationTime_->start();
+        elapsedTime_ = static_cast<float>(epoch_) * mainInst->parameters_->epochLength_;
+
+        /******************************* Log Info ****************************/
+        logEpochInfo(epoch_, elapsedTime_, simulationTime_->dSinceInit().count(), runtimeMetrics_->epochRuntime_,
+            inputPaths);
+
+        // update vehicle status
+        mainInst->nbOnboards_ = 0;
+        boost::dynamic_bitset<> removedRequests;
+        removedRequests.resize(EpochInst->nbRequests_);
+
+        for (auto &vehicleObj: mainInst->vehicles_) {
+            vehicleObj->updateStateTime(mainInst, mainInst->simulationStartTime_ + elapsedTime_, removedRequests);
+            mainInst->nbOnboards_ += static_cast<int>(vehicleObj->onboards_.size());
+        }
+
+        if (EpochInst->parameters_->mainAlgorithm_ != GREEDY &&
+            EpochInst->parameters_->mainAlgorithm_ != MIP) {
+            if (mainInst->parameters_->routeRecycle_) {
+                if (!MP_solver_->availableRoutes_.empty()) {
+                    updateAvailableRoutes(removedRequests, MP_solver_->availableRoutes_, mainInst);
+                }
+            }
+            else {
+                MP_solver_->availableRoutes_.clear();
+                MP_solver_->availableRoutes_.resize(EpochInst->nbVehicles_);
+            }
+            MP_solver_->duplicatesRoutes_.clear();
+            MP_solver_->duplicatesRoutes_.resize(EpochInst->nbVehicles_);
+        }
+
+
+        buildEpochInstance(mainInst, EpochInst, elapsedTime_, nbReceivedRequest);
+        if (mainInst->parameters_->routeRecycle_ &&
+            mainInst->parameters_->mainAlgorithm_ != MIP) {
+            // Process available routes: create columns and add keys to duplicates set
+            for (size_t vehicleID = 0; vehicleID < MP_solver_->availableRoutes_.size(); ++vehicleID) {
+                for (auto &routeObj : MP_solver_->availableRoutes_[vehicleID]) {
+                    // Create column once for this route
+                    routeObj->mpAdded_ = false;
+                    routeObj->cpAdded_ = false;
+                    routeObj->createColumn(EpochInst->nbRequests_);
+                    // Update the route key based on objCoef_ and routeRequests_
+                    routeObj->setKey();
+                    // Add the key to duplicatesRoutes_ set for this vehicle
+                    MP_solver_->duplicatesRoutes_[vehicleID].insert(routeObj->key_);
+                }
+            }
+        }
+
+        // saving the status in the middle of running
+        if (middleSave && elapsedTime_ >= saveTime) {
+            mainInst->saveStatus(inputPaths, EpochInst->simulationStartTime_ + elapsedTime_,
+                mainInst->parameters_->epochLength_, std::to_string(instance_count));
+
+            break;
+            saveTime += 90;
+            if (instance_count >= 30)
+                break;
+            instance_count ++;
+        }
+
+        if (EpochInst->nbRequests_ == 0) {
+            if (EpochInst->parameters_->mainAlgorithm_ != GREEDY &&
+                EpochInst->parameters_->mainAlgorithm_ != MIP)
+                MP_solver_->availableRoutes_.clear();
+            simulationTime_->stop();
+            epoch_++;
+            goto nextEpoch;
+        }
+
+        if (EpochInst->parameters_->mainAlgorithm_ == GREEDY) {
+            GreedyModel_->GreedySolver(EpochInst);
+            handleVehicleReturn(EpochInst);
+            zSolution = GreedyModel_->zSolution_;
+        }
+        else if (EpochInst->parameters_->mainAlgorithm_ == MIP) {
+#if defined(DARP_USE_CPLEX)
+            MIPModel_ = std::make_unique<MIPSolver_Cplex>();
+#elif defined(DARP_USE_GUROBI)
+            MIPModel_ = std::make_unique<MIPSolver_Gurobi>();
+#endif
+            MIPModel_->setTimeLimit(EpochInst->parameters_->epochLength_);
+            MIPModel_->SolveMIP(EpochInst, inputPaths);
+            zSolution = MIPModel_->zSolution_;
+            totalMIPSolveTime_ += MIPModel_->solveTime_->dSinceStart().count();
+        }
+        else {
+            solveEpoch(EpochInst, mainInst, inputPaths);
+            zSolution = MP_solver_->zSolution_;
+        }
+
+        elapsedTime_ = static_cast<float>(epoch_+1) * mainInst->parameters_->epochLength_;
+        EpochInst->setAssignedEpochVehicles(mainInst->simulationStartTime_ + elapsedTime_);
+        if (EpochInst->parameters_->mainAlgorithm_ == GREEDY)
+            *pLogRunTimesStream_ << saveRuntimesGreedy(EpochInst);
+        else if (EpochInst->parameters_->mainAlgorithm_ == MIP)
+            *pLogRunTimesStream_ << saveRuntimesMIP(EpochInst);
+        else
+            *pLogRunTimesStream_ << saveRuntimes(EpochInst);
+        epoch_++;
+        simulationTime_->stop();
+    }
+
+    for (auto & vehicleObj : mainInst->vehicles_) {
+        vehicleObj->finalizeSolutionRoutes(mainInst->simulationStartTime_+ elapsedTime_);
+        vehicleObj->solutionRoute_->calculateTripDelay(mainInst->parameters_->Wait_W1_,mainInst->parameters_->Ride_W2_);
+        // Test the solution route
+        vehicleObj->solutionRoute_->testRoute(vehicleObj);
+    }
+    rebalancingTime_->stop();
+    if (!middleSave) {
+        if (mainInst->parameters_->timeWindow_ > 0) {
+            for (auto& requestObj : mainInst->requests_) {
+                if (requestObj->requestStatus_ != COMPLETED)
+                    requestObj->requestStatus_ = REJECTED;
+            }
+        }
+    }
+}
+
+void BatchSolver::doSimulation(PInstance &mainInst, InputPaths &inputPaths, bool middleSave, float saveTime) {
+    std::cout << "====================================================================="<< std::endl;
+    std::cout << "                 Rolling Horizon with Batch of "<< mainInst->parameters_->epochLength_ << "(s)"<< std::endl;
+    std::cout << "====================================================================="<< std::endl;
+    BatchHorizon(mainInst, inputPaths, middleSave, saveTime);
+}

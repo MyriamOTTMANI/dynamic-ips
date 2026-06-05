@@ -45,8 +45,8 @@ across epochs. A lightweight idle-vehicle repositioning mechanism improves
 spatial coverage.
 
 > The B-CG and A-CG terminology is used consistently across this repository, the
-> [parameter reference](DARP_IPS/docs/parameters.md), and the
-> [reproducibility guide](DARP_IPS/computational_scripts/README_REPRODUCIBILITY.md).
+> [parameter reference](cpp/parameters.md), and the
+> [reproducibility guide](computational_scripts/README_REPRODUCIBILITY.md).
 
 ---
 
@@ -54,14 +54,19 @@ spatial coverage.
 
 ```
 dynamic-ips/
-├── DARP_IPS/          C++ solver, benchmark instance sets, experiment scripts
-└── DARP_Python/       Data-preparation pipeline and result visualization
+├── cpp/                    C++ column-generation solver
+├── python/                 Data-preparation pipeline and result visualization
+├── computational_scripts/  Experiment generation and SLURM submission
+└── data/                   Benchmark instance sets (Git LFS) + ToyExample
 ```
+
+`data/ToyExample/` is a tiny, self-contained instance that the solver runs by
+default when launched with no arguments — handy for smoke-testing a build.
 
 See the subfolder READMEs for full details:
 
-- **[C++ solver](DARP_IPS/README.md)** — build and run the solver, run experiments.
-- **[Python pipeline](DARP_Python/README.md)** — prepare datasets and reproduce all figures.
+- **[C++ solver](cpp/README.md)** — build and run the solver, run experiments.
+- **[Python pipeline](python/README.md)** — prepare datasets and reproduce all figures.
 
 ---
 
@@ -69,12 +74,13 @@ See the subfolder READMEs for full details:
 
 | Goal | Where to look |
 |------|---------------|
-| Build and run the solver | [C++ solver](DARP_IPS/README.md) |
-| Generate / run experiment commands (local or SLURM) | [Reproducibility guide](DARP_IPS/computational_scripts/README_REPRODUCIBILITY.md) |
-| Configure solver behavior (parameters) | [Parameter reference](DARP_IPS/docs/parameters.md) |
-| Reproduce **B-CG** figures | [Python pipeline](DARP_Python/README.md) → [B-CG plotting script](DARP_Python/scripts/plot_BCG.py) |
-| Reproduce **A-CG** figures | [Python pipeline](DARP_Python/README.md) → [A-CG plotting script](DARP_Python/scripts/plot_ACG.py) |
-| Prepare datasets from raw data | [Python pipeline](DARP_Python/README.md) |
+| Smoke-test a build on a tiny instance | [Toy example](data/ToyExample/README.md) — run `cpp/bin/realtime_DARP` with no args |
+| Build and run the solver | [C++ solver](cpp/README.md) |
+| Generate / run experiment commands (local or SLURM) | [Reproducibility guide](computational_scripts/README_REPRODUCIBILITY.md) |
+| Configure solver behavior (parameters) | [Parameter reference](cpp/parameters.md) |
+| Reproduce **B-CG** figures | [Python pipeline](python/README.md) → [B-CG plotting script](python/scripts/plot_BCG.py) |
+| Reproduce **A-CG** figures | [Python pipeline](python/README.md) → [A-CG plotting script](python/scripts/plot_ACG.py) |
+| Prepare datasets from raw data | [Python pipeline](python/README.md) |
 
 ---
 
@@ -89,10 +95,14 @@ locations with a precomputed travel-time matrix.
 | **NYC-DARP-Benchmark** (this work) | Manhattan virtual-stop network (1102 stops) | Amiri, Legrain & El Hallaoui (2026), [doi:10.5281/zenodo.20452171](https://doi.org/10.5281/zenodo.20452171) |
 | **Riley_Benchmark** | 1718-cell Manhattan grid | Riley, Legrain & Van Hentenryck (2026), [doi:10.5281/zenodo.18745880](https://doi.org/10.5281/zenodo.18745880) |
 
+Both benchmark sets live under `data/` and are tracked with [Git LFS](https://git-lfs.com).
+Install Git LFS (`git lfs install`) before cloning so the instance files are
+fetched, or run `git lfs pull` afterwards.
+
 This repository contains also the code and instructions for
 downloading the data, regenerating the network (if desired), and regenerating the instances
-in the [Python pipeline](DARP_Python/README.md). The benchmark folder
-layout is documented in the [C++ solver README](DARP_IPS/README.md).
+in the [Python pipeline](python/README.md). The benchmark folder
+layout is documented in the [C++ solver README](cpp/README.md).
 
 ---
 
@@ -101,13 +111,13 @@ layout is documented in the [C++ solver README](DARP_IPS/README.md).
 The end-to-end workflow is:
 
 1. **Build the solver** — compile the C++ code with a Gurobi (or CPLEX) backend.
-   See the [C++ solver README](DARP_IPS/README.md).
+   See the [C++ solver README](cpp/README.md).
 2. **Run experiments** — generate command files and run them locally or on a
    SLURM cluster.
-   See the [Reproducibility guide](DARP_IPS/computational_scripts/README_REPRODUCIBILITY.md).
+   See the [Reproducibility guide](computational_scripts/README_REPRODUCIBILITY.md).
 3. **Analyze and plot** — regenerate the B-CG and
    A-CG figures with the Python plotting scripts.
-   See the [Python pipeline](DARP_Python/README.md).
+   See the [Python pipeline](python/README.md).
 
 ---
 
@@ -118,9 +128,10 @@ section.
 
 ## License
 
-TODO: No license is currently specified. Add a `LICENSE` file before making the
-repository public. Note that this repository does not include CPLEX/Gurobi
-binaries; those remain under their respective licenses.
+This project is released under the [MIT License](LICENSE) © 2026 Laboratory for
+Combinatorial Optimization in Real-time Environment. Note that this repository
+does not include CPLEX/Gurobi binaries; those remain under their respective
+licenses.
 
 ---
 
