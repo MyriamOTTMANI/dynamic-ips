@@ -120,7 +120,8 @@ void MasterAlgorithm::setInitialDuals(PInstance &pInst, InputPaths &inputPaths, 
         for (auto &requestObj : zSolution_) {
             requestObj->dual_ = requestObj->Req_W3_ * requestObj->penalty_;
         }
-
+        for (auto &vehicleObj: pInst->vehicles_)
+            vehicleObj->dual_ = 0;
     }
 }
 

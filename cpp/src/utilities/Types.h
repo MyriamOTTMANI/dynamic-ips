@@ -228,7 +228,6 @@ enum RequestStatus : int {
     NO_ACTION = 0,
     ON_BOARD = 1,
     COMPLETED = 2,
-    REJECTED = 3
 };
 
 enum ReturnType : int {
@@ -241,6 +240,23 @@ enum NodeType : int {
     SINK = 1,
     PICKUP = 2,
     DROPOFF = 3
+};
+
+
+enum Type_paiement : int {
+    AVANCE        = 0,
+    A_LA_LIVRAISON = 1,
+    CREDIT        = 2
+};
+
+enum Preference_transport : int {
+    Frigorifique       = 0,
+    Bache              = 1,
+    Mega_bache         = 2,
+    Tole               = 3,
+    Mega_tole          = 4,
+    Plateau            = 5,
+    Plateau_Ridelle    = 6,
 };
 
 //-----------------------------------------------------------------------------

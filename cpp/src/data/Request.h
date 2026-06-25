@@ -26,13 +26,14 @@ public:
     int DropOffID_;                             // Drop off location ID
     int pickZoneID_;                            // zone ID of the pickup location
     int dropZoneID_;                            // zone ID of the drop off location
-    int nbPassengers_;                          // number of passengers to pick up or drop off
+    int Tonnage_marchandise_;                   // tonnage of merchandise to pick up or drop off
     float requestTime_;                         // time that request is received by the system (release time)
-    float earlyPick_;                           // earliest possible pickup time for the request
-    float serviceTime_;                         // time to perform pick up or drop off
+    float Prix_proposé;                         // proposed price for the request (used in the objective function) 
+    float earlyDrop_;                           // Time the request can be dropped off at the earliest (earliest drop off time)
+    float latestDrop_;                          // Time the request can be dropped off at the latest (latest drop off time)
     float minTravelTime_;                       // minimum travel time between pickup and drop off location (direct route)
     float maxTravelTime_;                       // maximum allowed travel time between pickup and drop off location
-    
+    Type_marchandise type_marchandise_;         // type of merchandise to pick up or drop off
     RequestStatus requestStatus_;               // status of the request: unassigned, assigned, committed, served, not served
     float penalty_;                             // penalty of not serving in the current period
 

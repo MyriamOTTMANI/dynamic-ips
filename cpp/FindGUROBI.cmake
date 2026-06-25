@@ -163,6 +163,10 @@ endif()
 # Find the Gurobi C++ library
 # On some systems, the C++ library might have different names or be missing
 set(GUROBI_CXX_LIB_NAMES
+        gurobi_c++md2017     # Windows MSVC 2017+ MD runtime (Release DLL CRT)
+        gurobi_c++mt2017     # Windows MSVC 2017+ MT runtime (Release static CRT)
+        gurobi_c++mdd2017    # Windows MSVC 2017+ MDD runtime (Debug DLL CRT)
+        gurobi_c++mtd2017    # Windows MSVC 2017+ MTD runtime (Debug static CRT)
         libgurobi_c++.a      # Static library (common on macOS)
         gurobi_c++.a
         libgurobi_c++.dylib  # Dynamic library
@@ -241,19 +245,33 @@ if(GUROBI_FOUND)
 
   # Create imported targets for modern CMake
   if(NOT TARGET gurobi::gurobi)
-    if(GUROBI_LIB_EXT STREQUAL ".a")
+    if(WIN32)
+      # gurobi120.lib is an import library (.lib) for gurobi120.dll
+      add_library(gurobi::gurobi SHARED IMPORTED)
+      set_target_properties(gurobi::gurobi PROPERTIES
+              IMPORTED_IMPLIB ${GUROBI_LIBRARY}
+              INTERFACE_INCLUDE_DIRECTORIES ${GUROBI_INCLUDE_DIRS}
+      )
+    elseif(GUROBI_LIB_EXT STREQUAL ".a")
       add_library(gurobi::gurobi STATIC IMPORTED)
+      set_target_properties(gurobi::gurobi PROPERTIES
+              IMPORTED_LOCATION ${GUROBI_LIBRARY}
+              INTERFACE_INCLUDE_DIRECTORIES ${GUROBI_INCLUDE_DIRS}
+      )
     else()
       add_library(gurobi::gurobi SHARED IMPORTED)
+      set_target_properties(gurobi::gurobi PROPERTIES
+              IMPORTED_LOCATION ${GUROBI_LIBRARY}
+              INTERFACE_INCLUDE_DIRECTORIES ${GUROBI_INCLUDE_DIRS}
+      )
     endif()
-    set_target_properties(gurobi::gurobi PROPERTIES
-            IMPORTED_LOCATION ${GUROBI_LIBRARY}
-            INTERFACE_INCLUDE_DIRECTORIES ${GUROBI_INCLUDE_DIRS}
-    )
   endif()
 
   if(NOT TARGET gurobi::gurobi_c++)
-    if(GUROBI_CXX_LIB_EXT STREQUAL ".a")
+    if(WIN32)
+      # gurobi_c++md2017.lib is a true static library (the C++ wrapper)
+      add_library(gurobi::gurobi_c++ STATIC IMPORTED)
+    elseif(GUROBI_CXX_LIB_EXT STREQUAL ".a")
       add_library(gurobi::gurobi_c++ STATIC IMPORTED)
     else()
       add_library(gurobi::gurobi_c++ SHARED IMPORTED)

@@ -1,93 +1,117 @@
-//
-// Created by Ella on 2021-09-13.
-//
+// Adapté pour le projet Bourse de Fret — Stage Polytechnique Montréal
 
-#include "Request.h"
-
-//---------------------------------------------------------------------------------------------
-//  request class
-//  contains the request info request time, number of passengers, pickup and drop off location
-//---------------------------------------------------------------------------------------------
+#include "Request2.h"
+#include "Vehicle.h"
 
 unsigned int Request::requestCount_ = 0;
 
-// Constructor and Destructor
-Request::Request(int pickUpID, int dropOffID, float requestTime, float earlyPick, int nbPassengers, float deltaTime,
-                 int pickZoneID, int dropZoneID) :
-        requestID_(requestCount_++), PickUpID_(pickUpID), DropOffID_(dropOffID),
-        pickZoneID_(pickZoneID), dropZoneID_(dropZoneID), nbPassengers_(nbPassengers), requestTime_(requestTime),
-        earlyPick_(earlyPick), serviceTime_(deltaTime){
-    initialEarlyPick_ = earlyPick;
-    allocVehicleID_ = LARGE_CONSTANT;
-    solVehicleID_ = LARGE_CONSTANT;
-    epochVehicleID_ = LARGE_CONSTANT;
-    maxTravelTime_ = 0;
-    requestStatus_ = NO_ACTION;
-    penalty_ = 0;
-    char *name2 = new char[255];
-    strncpy(name2, std::to_string(requestID_).c_str(), 255);
-    name_ = name2;
-    pickTime_ = LARGE_CONSTANT;
-    dropTime_ = LARGE_CONSTANT;
-    commitTime_ = LARGE_CONSTANT;
-    assignTime_ = LARGE_CONSTANT;
-    committedPickTime_ = LARGE_CONSTANT;
-    plannedDelay_ = LARGE_CONSTANT;
-    latestPickup_ = LARGE_CONSTANT;
-    dual_ = 0;
-    InitialDual_ = 0;
-    minDual_ = LARGE_CONSTANT;
-    maxDual_ = 0;
-    lastDual_ = 0;
-    minTravelTime_ = 0;
-    taskIndex_ = -1;
-    taskIndexLabel_ = -1;
-    nbSwitch_ = 0;
-    marginalCost_ = 0.0;
-    latestDrop_ = 0.0;
-    Req_W3_ = 1.0;
-    Ride_W4_ = 0.0;
-    Relative_W5_ = 1.0;
+// ---------------------------------------------------------------------------
+// Constructeur
+// ---------------------------------------------------------------------------
+Request::Request(int pickUpID, int dropOffID,
+                 float requestTime, float latestPickup,
+                 float earlyDrop, float latestDrop,
+                 int tonnage, int corridorID,
+                 float prixPropose,
+                 bool requiresADR, bool requiresCabotage,
+                 Preference_transport preferenceTransport,
+                 Type_paiement typePaiement) :
+        requestID_(requestCount_++),
+        PickUpID_(pickUpID), DropOffID_(dropOffID),
+        corridorID_(corridorID),
+        requestTime_(requestTime), latestPickup_(latestPickup),
+        earlyDrop_(earlyDrop), latestDrop_(latestDrop),
+        Tonnage_marchandise_(tonnage),
+        Prix_propose_(prixPropose),
+        requiresADR_(requiresADR), requiresCabotage_(requiresCabotage),
+        preference_transport_(preferenceTransport),
+        typePaiement_(typePaiement) {
+
+    name_               = std::to_string(requestID_);
+    prixMoyen_corridor_ = 0.0f;
+
+    // Rolling horizon
+    batchID_            = -1;
+    penaltyBatchCount_  = 0;
+    penalty_            = 0.0f;
+    isLocked_           = false;
+    requestStatus_      = NO_ACTION;
+
+    // Column generation
+    dual_               = 0.0f;
+    lastDual_           = 0.0f;
+    taskIndex_          = -1;
+    taskIndexLabel_     = -1;
+
+    // Tracking simulation (LARGE_CONSTANT = non encore défini)
+    assignTime_         = constants::LARGE_CONSTANT;
+    commitTime_         = constants::LARGE_CONSTANT;
+    committedPickTime_  = constants::LARGE_CONSTANT;
+    pickTime_           = constants::LARGE_CONSTANT;
+    dropTime_           = constants::LARGE_CONSTANT;
+    allocVehicleID_     = constants::LARGE_CONSTANT;
+    solVehicleID_       = constants::LARGE_CONSTANT;
+
+    minTravelTime_      = 0.0f;
 }
 
+// ---------------------------------------------------------------------------
+// Destructeur
+// ---------------------------------------------------------------------------
 Request::~Request() {
-    delete[] name_;
 }
 
-// Display function
+// ---------------------------------------------------------------------------
+// Affichage
+// ---------------------------------------------------------------------------
 std::string Request::toString() const {
     std::stringstream repStr;
     repStr << std::left;
     repStr << "# REQUEST ( " << requestID_ << " )" << std::endl;
-    repStr << "#\t" << std::setw(24) << "- NUMBER_OF_PASSENGERS" << " : " << nbPassengers_ << std::endl;
+    repStr << "#\t" << std::setw(24) << "- PICKUP_ID"   << " : " << PickUpID_             << std::endl;
+    repStr << "#\t" << std::setw(24) << "- DROPOFF_ID"  << " : " << DropOffID_            << std::endl;
+    repStr << "#\t" << std::setw(24) << "- TONNAGE"     << " : " << Tonnage_marchandise_  << std::endl;
+    repStr << "#\t" << std::setw(24) << "- PRIX"        << " : " << Prix_propose_         << std::endl;
+    repStr << "#\t" << std::setw(24) << "- STATUS"      << " : " << requestStatus_        << std::endl;
     repStr << "#" << std::endl;
     return repStr.str();
 }
 
-// Getters and Setters
-unsigned int Request::getRequestId() const {return requestID_;}
+// ---------------------------------------------------------------------------
+// Getters / Setters
+// ---------------------------------------------------------------------------
+unsigned int Request::getRequestId() const { return requestID_; }
+
 void Request::setMinTravelTime(float minTravelTime) {
     minTravelTime_ = minTravelTime;
 }
 
-void Request::setMaxTravelTime(const float &alphaParam, const float &betaParam) {
-    maxTravelTime_ = std::max(alphaParam * minTravelTime_, betaParam + minTravelTime_);
-    /*if (minTravelTime_ == 0)
-        maxTravelTime_ = 0;*/
+// ---------------------------------------------------------------------------
+// Rolling horizon : mise à jour de la pénalité
+// Appelé au début de chaque nouveau batch
+// ---------------------------------------------------------------------------
+void Request::updatePenalty(int currentBatchID, const PParameters& parameters) {
+    if (batchID_ >= 0) {
+        penaltyBatchCount_ = currentBatchID - batchID_;
+    }
+    penalty_ = parameters->deltaPram_ * static_cast<float>(penaltyBatchCount_);
 }
 
-// This function updates penalties based on elapsed time for any time framework
-void Request::setPenalty(float elapsedTime, const PParameters &parameters, float simulationStart) {
-
-    penalty_ = static_cast<int>(parameters->deltaPram_
-                                  * pow(2, (elapsedTime - (initialEarlyPick_-simulationStart)) / static_cast<float>(10 * parameters->penaltyL_)));
+// ---------------------------------------------------------------------------
+// Column generation : contribution au coût réduit
+// ---------------------------------------------------------------------------
+float Request::reducedCostContribution() const {
+    return Prix_propose_ - dual_;
 }
 
-void Request::setMaxMinDual() {
-    if (maxDual_ < dual_)
-        maxDual_ = dual_;
-    if (minDual_ > dual_)
-        minDual_ = dual_;
+// ---------------------------------------------------------------------------
+// Compatibilité avec un camion (filtre graphe)
+// ---------------------------------------------------------------------------
+bool Request::isCompatibleWith(const Vehicle& truck) const {
+    // À compléter selon les champs de Vehicle.h
+    // Exemple de vérifications minimales :
+    //   - capacité suffisante
+    //   - type de camion compatible avec type de marchandise
+    //   - certifications ADR si nécessaire
+    return true;
 }
-
-

@@ -3,6 +3,7 @@
 //
 
 #include "SubproModeler.h"
+#include <mutex>
 
 SubproModeler::SubproModeler(const PVehicle &vehicle) : Vehicle_(&(*vehicle)) {
     subGraph_ = std::make_shared<Graph>();
@@ -61,7 +62,8 @@ void SubproModeler::initSubGraph(const PInstance &pInst) {
             if (isRequestUnassigned || pInst->requests_[i]->coveredVehicles_.test(Vehicle_->vehicleID_)) {
                 possibleInsert_ ++;
                 insertRequest = true;
-                pInst->requests_[i]->insertedVehicles_.set(Vehicle_->vehicleID_,true);
+                { static std::mutex m; std::lock_guard<std::mutex> lk(m);
+                  pInst->requests_[i]->insertedVehicles_.set(Vehicle_->vehicleID_,true); }
             }
         }
         if (reOptimize_)
